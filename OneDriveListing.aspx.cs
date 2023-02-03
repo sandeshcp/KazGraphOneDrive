@@ -361,6 +361,12 @@ namespace KazGraph
 
                 var LICountry = new ListItem("----Select----", "-1");
                 dllTenent.Items.Insert(0, LICountry);
+
+                if (Session["dllTenentSelected"] != null)
+                {
+                    dllTenent.SelectedValue = Convert.ToString(Session["dllTenentSelected"]);
+                    DDLUserBind();
+                }
             }
             catch (Exception)
             {
