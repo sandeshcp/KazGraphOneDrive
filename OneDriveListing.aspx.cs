@@ -63,8 +63,6 @@ namespace KazGraph
                 GetTenantList();
                 #endregion
 
-
-
                 if (!string.IsNullOrWhiteSpace(Request.QueryString["name"]))
                 {
                     //var Data_session = new SessionModel();
@@ -112,6 +110,7 @@ namespace KazGraph
                     if (Session["ddluserSelected"] != null)
                     {
                         ddlUser.SelectedValue = Convert.ToString(Session["ddluserSelected"]);
+                        ddlActionTrigger();
                     }
                 }
 
@@ -145,6 +144,7 @@ namespace KazGraph
         {
             #region Code Connections
             string userid = string.Empty;
+            string actiontrigger = string.Empty;
             if (Session["Token"] == null)
             {
                 TokenGenerate();
@@ -153,18 +153,36 @@ namespace KazGraph
             {
                 userid = Convert.ToString(Session["ddluserSelected"]);
             }
-
+            if (Session["ddlActionSelected"] != null)
+            {
+                actiontrigger = Convert.ToString(Session["ddlActionSelected"]);
+            }
             if (!string.IsNullOrWhiteSpace(userid))
             {
-                List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
-                Task t2 = Task.Run(async () =>
+                if (actiontrigger != null)
                 {
-                    var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
-                    te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
-                });
-                t2.Wait();
-                #endregion
-                return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+                    if (actiontrigger == "2") //to db store
+                    {
+                        List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
+                        Task t2 = Task.Run(async () =>
+                        {
+                            var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
+                            te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+                        });
+                        t2.Wait();
+                        #endregion
+                        return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+                    }
+                    else if (actiontrigger == "1") //Get From db store
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                return null;
             }
             else
                 return null;
@@ -536,8 +554,11 @@ namespace KazGraph
             ddlAction.DataSource = act;
             ddlAction.DataBind();
 
-            ddlAction.SelectedValue = "-1";
-            Session["ddlActionSelected"] = ddlAction.SelectedValue;
+            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]))
+            {
+                ddlAction.SelectedValue = "-1";
+                Session["ddlActionSelected"] = ddlAction.SelectedValue;
+            }
         }
     }
 }
