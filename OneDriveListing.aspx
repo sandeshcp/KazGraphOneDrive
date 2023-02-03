@@ -170,7 +170,7 @@
             <br />
             <br />
             Tenant ; 
-            <asp:DropDownList ID="dllTenent" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id">                
+            <asp:DropDownList ID="dllTenent" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id" OnSelectedIndexChanged="dllTenent_SelectedIndexChanged">                
             </asp:DropDownList>
             <br />
             <br />

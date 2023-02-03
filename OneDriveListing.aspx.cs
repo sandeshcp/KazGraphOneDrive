@@ -35,6 +35,7 @@ using ListItem = System.Web.UI.WebControls.ListItem;
 using System.Data.SqlClient;
 using Azure.Core;
 using System.Configuration;
+using System.Data.Common;
 
 namespace KazGraph
 {
@@ -49,6 +50,8 @@ namespace KazGraph
         private static string ADResource = WebConfigurationManager.AppSettings["ADResource"];
         private static string ADGraphOneDrive = WebConfigurationManager.AppSettings["ADGraphOneDrive"];
         private static string ADGraphUser = WebConfigurationManager.AppSettings["ADGraphUser"];
+        private static string ADScopes = WebConfigurationManager.AppSettings["ADScopes"];
+
         #endregion
 
         protected void Page_Load(object sender, EventArgs e)
@@ -58,10 +61,8 @@ namespace KazGraph
                 #region DDLTenantbind
                 GetTenantList();
                 #endregion
-                TokenGenerate();
-                #region DDlUserBind
-                DDLUserBind();
-                #endregion
+
+               
 
                 if (!string.IsNullOrWhiteSpace(Request.QueryString["name"]))
                 {
@@ -93,23 +94,26 @@ namespace KazGraph
                     objuser = JsonConvert.SerializeObject(await getUserList().ConfigureAwait(false));
                 });
                 t1.Wait();
-
-                List<ListItem> users = new List<ListItem>();
-                foreach (clsUserDetails su in JsonConvert.DeserializeObject<List<clsUserDetails>>(objuser))
+                if (objuser != "null")
                 {
-                    users.Add(new ListItem(su.displayName, su.id));
-                }
-                ddlUser.DataTextField = "Text";
-                ddlUser.DataValueField = "Value";
-                ddlUser.DataSource = users;
-                ddlUser.DataBind();
-                ListItem LICountry = new ListItem("----Select----", "-1");
-                ddlUser.Items.Insert(0, LICountry);
+                    List<ListItem> users = new List<ListItem>();
+                    foreach (clsUserDetails su in JsonConvert.DeserializeObject<List<clsUserDetails>>(objuser))
+                    {
+                        users.Add(new ListItem(su.displayName, su.id));
+                    }
+                    ddlUser.DataTextField = "Text";
+                    ddlUser.DataValueField = "Value";
+                    ddlUser.DataSource = users;
+                    ddlUser.DataBind();
+                    ListItem LICountry = new ListItem("----Select----", "-1");
+                    ddlUser.Items.Insert(0, LICountry);
 
-                if (Session["ddluserSelected"] != null)
-                {
-                    ddlUser.SelectedValue = Convert.ToString(Session["ddluserSelected"]);
+                    if (Session["ddluserSelected"] != null)
+                    {
+                        ddlUser.SelectedValue = Convert.ToString(Session["ddluserSelected"]);
+                    }
                 }
+
             }
             catch (Exception ex)
             {
@@ -119,15 +123,21 @@ namespace KazGraph
 
         private void TokenGenerate()
         {
-            if (string.IsNullOrWhiteSpace((string)Session["Token"]))
+            if (!string.IsNullOrWhiteSpace(Convert.ToString(HttpContext.Current.Session["dllTenentSelected"])))
             {
-                var TokenID = string.Empty;
-                Task t1 = Task.Run(async () =>
+                if (string.IsNullOrWhiteSpace((string)Session["Token"]))
                 {
-                    TokenID = JsonConvert.SerializeObject(await GetGraphAccessToken().ConfigureAwait(false));
-                });
-                t1.Wait();
-                Session["Token"] = JsonConvert.DeserializeObject<GraphAuthTokenResponse>(TokenID.ToString()).access_token;
+                    var TokenID = string.Empty;
+                    Task t1 = Task.Run(async () =>
+                    {
+                        TokenID = JsonConvert.SerializeObject(await GetGraphAccessToken().ConfigureAwait(false));
+                    });
+                    t1.Wait();
+                    if (TokenID != "null")
+                    {
+                        Session["Token"] = JsonConvert.DeserializeObject<GraphAuthTokenResponse>(TokenID.ToString()).access_token;
+                    }
+                }
             }
         }
         private List<clsOneDriveRootValue> BindGridList(string query)
@@ -169,41 +179,56 @@ namespace KazGraph
             }
         }
 
-        public static async Task<GraphAuthTokenResponse> GetGraphAccessToken()
+        public async Task<GraphAuthTokenResponse> GetGraphAccessToken()
         {
             string res = string.Empty;
             GraphAuthTokenResponse myDeserializedClass = null;
             try
             {
-                #region GraphAccessToken
-                var url = MSGraphTokenURL + TenantID + "/oauth2/token";
-                var dict = new Dictionary<string, string>
+                string _TenentSelected = Convert.ToString(Session["dllTenentSelected"]);
+                if (_TenentSelected != null)
+                {
+                    //var anInstanceofMyClass = new OneDriveListing();
+                    //var TenantDetails = await anInstanceofMyClass.GetTenantDetails(_TenentSelected).ConfigureAwait(false);                    
+                    //var anInstanceofMyClass = new OneDriveListing();
+                    var TenantDetails = await GetTenantDetails(_TenentSelected).ConfigureAwait(false);                    
+                    #region GraphAccessToken
+                    var url = MSGraphTokenURL + TenantDetails.TenantID + "/oauth2/token";
+                    var dict = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/x-www-form-urlencoded" },
-                    { "grant_type", GrantType },
-                    { "client_id", ADClientID },
-                    { "client_secret", ADClientSecret },
-                    { "resource", ADResource }
+                    { "grant_type", TenantDetails.GrantType },
+                    { "client_id", TenantDetails.ClientID},
+                    { "client_secret", TenantDetails.ClientSecret},
+                    { "resource", TenantDetails.Resource }
                 };
 
-                using (var client = new HttpClient())
-                {
-                    var req = new HttpRequestMessage(HttpMethod.Post, url)
+                    using (var client = new HttpClient())
                     {
-                        Content = new FormUrlEncodedContent(dict)
-                    };
-                    await client.SendAsync(req)
-                           .ContinueWith(responseTask =>
-                           {
-                               if (responseTask.Result.IsSuccessStatusCode)
+                        var req = new HttpRequestMessage(HttpMethod.Post, url)
+                        {
+                            Content = new FormUrlEncodedContent(dict)
+                        };
+                        await client.SendAsync(req)
+                               .ContinueWith(responseTask =>
                                {
-                                   myDeserializedClass = JsonConvert.DeserializeObject<GraphAuthTokenResponse>(Convert.ToString(responseTask.Result.Content.ReadAsStringAsync().Result));
-                               }
-                           });
+                                   if (responseTask.Result.IsSuccessStatusCode)
+                                   {
+                                       myDeserializedClass = JsonConvert.DeserializeObject<GraphAuthTokenResponse>(Convert.ToString(responseTask.Result.Content.ReadAsStringAsync().Result));
+                                   }
+                               });
+                    }
+
+                    #endregion
                 }
 
-                #endregion
+
                 return myDeserializedClass;
+            }
+            catch (NullReferenceException ex)
+            {
+                Debug.WriteLine("Authentication GetGraphAccessToken Method: " + ex.Message + " " + ex.StackTrace.ToString());
+                return null;
             }
             catch (Exception ex)
             {
@@ -214,6 +239,9 @@ namespace KazGraph
 
         private static async Task<List<clsOneDriveRootValue>> GetGraphAccessOneDrive(string AccessToken, string UserID)
         {
+            #region MyRegion
+           
+            #endregion
             string res = string.Empty;
             List<clsOneDriveRootValue> myDeserializedClass = null;
             try
@@ -316,17 +344,142 @@ namespace KazGraph
         public void GetTenantList()
         {
             SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["KazooDB"].ConnectionString);
-            string com = "Select * from AzureConnection";
-            SqlDataAdapter adpt = new SqlDataAdapter(com, con);
-            DataTable dt = new DataTable();
-            adpt.Fill(dt);
-            dllTenent.DataTextField = "AzureConnectionName";
-            dllTenent.DataValueField = "AzureConnectionID";
-            dllTenent.DataSource = dt;
-            dllTenent.DataBind();            
-            
-            var LICountry = new ListItem("----Select----", "-1");
-            dllTenent.Items.Insert(0, LICountry);
+            SqlDataAdapter adpt = new SqlDataAdapter();
+            SqlCommand command = new SqlCommand();
+
+            try
+            {
+                con.Open();
+                string com = "Select * from AzureConnection";
+                adpt = new SqlDataAdapter(com, con);
+                DataTable dt = new DataTable();
+                adpt.Fill(dt);
+                dllTenent.DataTextField = "AzureConnectionName";
+                dllTenent.DataValueField = "AzureConnectionID";
+                dllTenent.DataSource = dt;
+                dllTenent.DataBind();
+
+                var LICountry = new ListItem("----Select----", "-1");
+                dllTenent.Items.Insert(0, LICountry);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+                adpt.Dispose();
+                command.Dispose();
+                con.Close();
+            }
+        }
+
+        public async Task<clsTenantList> GetTenantDetails(string id)
+        {
+            clsTenantList obj = new clsTenantList();
+
+            SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["KazooDB"].ConnectionString);
+            con.Open();
+            SqlCommand command;
+            SqlDataReader dataReader;
+            String sql, Output = " ";
+            sql = "Select AzureConnectionID, AccountID,AzureConnectionName,Token,ClientID,ClientSecret,Resource,GrantType,TenantID,Scopes from AzureConnection where AzureConnectionID='" + id + "'";
+
+            command = new SqlCommand(sql, con);
+
+            dataReader = await command.ExecuteReaderAsync();
+            while (dataReader.Read())
+            {
+                //var employeeObj = dataReader.MapToObject<clsTenantList>();
+                obj.AzureConnectionID = Guid.Parse(Convert.ToString(dataReader.GetValue(0)));
+                if (!string.IsNullOrWhiteSpace(dataReader["AccountID"] as string))
+                {
+                    obj.AccountID = Guid.Parse(Convert.ToString(dataReader["AccountID"]));
+                }
+                obj.AzureConnectionName = Convert.ToString(dataReader.GetValue(2));
+                obj.Token = Convert.ToString(dataReader.GetValue(3));
+                obj.ClientID = Convert.ToString(dataReader.GetValue(4));
+                obj.ClientSecret = Convert.ToString(dataReader.GetValue(5));
+                obj.Resource = Convert.ToString(dataReader.GetValue(6));
+                obj.GrantType = Convert.ToString(dataReader.GetValue(7));
+                obj.TenantID = Convert.ToString(dataReader.GetValue(8));
+                obj.Scopes = Convert.ToString(dataReader.GetValue(9));
+            }
+
+            Response.Write(Output);
+            dataReader.Close();
+            command.Dispose();
+            con.Close();
+            return obj;
+        }
+
+        protected void dllTenent_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (dllTenent.SelectedValue == "-1")
+            {
+
+            }
+            else
+            {
+                //var sam1 = GetTenantDetails(Convert.ToString(dllTenent.SelectedValue));
+                var selectName = dllTenent.SelectedValue;
+                Session["dllTenentSelected"] = dllTenent.SelectedValue;
+                Session["Token"] = string.Empty;
+                TokenGenerate();
+                #region DDlUserBind
+                DDLUserBind();
+                #endregion
+                //return accessToken;
+
+                #region WasteToken
+                ////var tenantId = "27d1c216-24…";
+
+                //// var clientId = "877edd8a-5a…";
+                //var sam1 = GetTenantDetails(Session["dllTenentSelected"].ToString());
+                //var authorityUri = $"https://login.microsoftonline.com/{sam1.TenantID}";
+                //var redirectUri = "https://localhost:44342/OneDriveListing";
+                //var scopes = new List<string> { "Files.Read", "Files.Read.All", "Files.ReadWrite", "Files.ReadWrite.All", "Sites.Read.All", "Sites.ReadWrite.All" };
+
+                //string redirectUri = "https://myapp.azurewebsites.net";
+                //IConfidentialClientApplication publicClient = ConfidentialClientApplicationBuilder.Create(sam1.ClientID)
+                //    .WithClientSecret(sam1.ClientSecret)
+                //    .WithRedirectUri(redirectUri)
+                //    .Build();
+
+
+
+                //var publicClient = PublicClientApplicationBuilder
+                //              .Create(sam1.ClientID)
+                //              .WithAuthority(new Uri(authorityUri))
+                //              .WithRedirectUri(redirectUri)
+                //              .Build();
+
+                //object output = string.Empty;
+                //publicClient.GetAccountsAsync();
+
+                ////var accessToken = accessTokenRequest.ExecuteAsync().Result.AccessToken;
+
+
+
+                //var objuser = string.Empty;
+                //Task t1 = Task.Run(async () =>
+                //{
+                //    //var accessTokenRequest = publicClient.AcquireTokenByUsernamePassword(scopes, "projectdeployee@gmail.com", "NewYear2023!").ExecuteAsync().ContinueWith(responseTask =>
+                //    var accessTokenRequest = publicClient.AcquireTokenInteractive(scopes).ExecuteAsync().ContinueWith(responseTask =>
+                //    {
+                //        if (responseTask.IsCompleted)
+                //        {
+                //            output = responseTask.Result;
+
+                //        }
+                //    });
+                //    //objuser = JsonConvert.SerializeObject(await getUserList().ConfigureAwait(false));
+                //});
+                //t1.Wait();
+                //var sam = output.ToString();
+                #endregion
+            }
         }
     }
 }
