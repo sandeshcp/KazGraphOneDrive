@@ -170,7 +170,7 @@
             <br />
             <br />
             Tenant ; 
-            <asp:DropDownList ID="dllTenent" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id" OnSelectedIndexChanged="dllTenent_SelectedIndexChanged">                
+            <asp:DropDownList ID="dllTenent" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id" OnSelectedIndexChanged="dllTenent_SelectedIndexChanged">
             </asp:DropDownList>
             <br />
             <br />
@@ -178,10 +178,10 @@
             <asp:DropDownList ID="ddlUser" runat="server" AutoPostBack="True" OnSelectedIndexChanged="ddlUser_SelectedIndexChanged" DataTextField="displayName" DataValueField="id"></asp:DropDownList>
             <br />
             <br />
-            <asp:DropDownList ID="ddlCustomGrid" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id">
-                <asp:ListItem Value="">Please Select</asp:ListItem>
-                <asp:ListItem>From DB </asp:ListItem>
-                <asp:ListItem>To DB</asp:ListItem>
+            <asp:DropDownList ID="ddlAction" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id" OnSelectedIndexChanged="ddlAction_SelectedIndexChanged">
+                <%--<asp:ListItem Value="-1">Please Select</asp:ListItem>
+                <asp:ListItem Value="1">From DB </asp:ListItem>
+                <asp:ListItem Value="2">To DB</asp:ListItem>--%>
             </asp:DropDownList>
             <br />
             <br />
@@ -220,7 +220,7 @@
         <hr />
 
         <asp:GridView ID="gvOneDriveItem" runat="server" AutoGenerateColumns="false" CssClass="Grid"
-            DataKeyNames="id" OnRowDataBound="OnRowDataBound">
+            DataKeyNames="id" OnRowDataBound="OnRowDataBound" ShowHeaderWhenEmpty="true">
             <Columns>
                 <asp:TemplateField>
                     <ItemTemplate>
@@ -278,6 +278,9 @@
                 <asp:BoundField ItemStyle-Width="200" DataField="parentReference.path" HeaderText="parentReference path" />
                 <asp:BoundField ItemStyle-Width="200" DataField="file.mimeType" HeaderText="File Structure" />
             </Columns>
+            <EmptyDataTemplate>
+                <div align="center">No records found.</div>
+            </EmptyDataTemplate>
         </asp:GridView>
     </div>
 

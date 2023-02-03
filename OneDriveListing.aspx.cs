@@ -36,6 +36,7 @@ using System.Data.SqlClient;
 using Azure.Core;
 using System.Configuration;
 using System.Data.Common;
+using System.Collections;
 
 namespace KazGraph
 {
@@ -62,7 +63,7 @@ namespace KazGraph
                 GetTenantList();
                 #endregion
 
-               
+
 
                 if (!string.IsNullOrWhiteSpace(Request.QueryString["name"]))
                 {
@@ -191,7 +192,7 @@ namespace KazGraph
                     //var anInstanceofMyClass = new OneDriveListing();
                     //var TenantDetails = await anInstanceofMyClass.GetTenantDetails(_TenentSelected).ConfigureAwait(false);                    
                     //var anInstanceofMyClass = new OneDriveListing();
-                    var TenantDetails = await GetTenantDetails(_TenentSelected).ConfigureAwait(false);                    
+                    var TenantDetails = await GetTenantDetails(_TenentSelected).ConfigureAwait(false);
                     #region GraphAccessToken
                     var url = MSGraphTokenURL + TenantDetails.TenantID + "/oauth2/token";
                     var dict = new Dictionary<string, string>
@@ -240,7 +241,7 @@ namespace KazGraph
         private static async Task<List<clsOneDriveRootValue>> GetGraphAccessOneDrive(string AccessToken, string UserID)
         {
             #region MyRegion
-           
+
             #endregion
             string res = string.Empty;
             List<clsOneDriveRootValue> myDeserializedClass = null;
@@ -315,31 +316,7 @@ namespace KazGraph
             }
         }
 
-        protected void ddlUser_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (ddlUser.SelectedValue == "-1")
-            {
 
-            }
-            else
-            {
-                var selectName = ddlUser.SelectedValue;
-                Session["ddluserSelected"] = ddlUser.SelectedValue;
-                List<clsOneDriveRootValue> obj = new List<clsOneDriveRootValue>();
-                if (!string.IsNullOrWhiteSpace(Request.QueryString["name"]))
-                {
-                    obj = BindGridList(Request.QueryString["name"]);
-                    gvOneDriveItem.DataSource = obj;
-                    gvOneDriveItem.DataBind();
-                }
-                else
-                {
-                    obj = BindGridList("/drive/root:");
-                    gvOneDriveItem.DataSource = obj;
-                    gvOneDriveItem.DataBind();
-                }
-            }
-        }
 
         public void GetTenantList()
         {
@@ -424,10 +401,11 @@ namespace KazGraph
         {
             if (dllTenent.SelectedValue == "-1")
             {
-
+                gridReset();
             }
             else
             {
+                gridReset();
                 //var sam1 = GetTenantDetails(Convert.ToString(dllTenent.SelectedValue));
                 var selectName = dllTenent.SelectedValue;
                 Session["dllTenentSelected"] = dllTenent.SelectedValue;
@@ -486,6 +464,75 @@ namespace KazGraph
                 //var sam = output.ToString();
                 #endregion
             }
+        }
+
+        protected void ddlUser_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            gridReset();
+            if (ddlUser.SelectedValue == "-1")
+            {
+
+            }
+            else
+            {
+                var selectName = ddlUser.SelectedValue;
+                Session["ddluserSelected"] = ddlUser.SelectedValue;
+            }
+        }
+
+        protected void ddlAction_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddlAction.SelectedValue == "-1")
+            {
+                gridReset();
+            }
+            else
+            {
+                List<clsOneDriveRootValue> obj = new List<clsOneDriveRootValue>();
+                var selectName = ddlAction.SelectedValue;
+                Session["ddlActionSelected"] = ddlAction.SelectedValue;
+
+                if (!string.IsNullOrWhiteSpace(Request.QueryString["name"]))
+                {
+                    obj = BindGridList(Request.QueryString["name"]);
+                    gvOneDriveItem.DataSource = obj;
+                    gvOneDriveItem.DataBind();
+                }
+                else
+                {
+                    obj = BindGridList("/drive/root:");
+                    gvOneDriveItem.DataSource = obj;
+                    gvOneDriveItem.DataBind();
+                }
+            }
+        }
+
+        public void gridReset()
+        {
+            List<clsOneDriveRootValue> obj = new List<clsOneDriveRootValue>();
+            gvOneDriveItem.DataSource = obj;
+            gvOneDriveItem.DataBind();
+            ddlActionTrigger();
+        }
+
+        public void ddlActionTrigger()
+        {
+            ddlAction.DataTextField = "Text";
+            ddlAction.DataValueField = "Value";
+
+            List<ListItem> act = new List<ListItem>
+            {
+                new ListItem("----Select----", "-1"),
+                new ListItem("From DB", "1"),
+                new ListItem("To DB", "2")
+            };
+            //ddlAction.Items.Insert(0, act);
+
+            ddlAction.DataSource = act;
+            ddlAction.DataBind();
+
+            ddlAction.SelectedValue = "-1";
+            Session["ddlActionSelected"] = ddlAction.SelectedValue;
         }
     }
 }
