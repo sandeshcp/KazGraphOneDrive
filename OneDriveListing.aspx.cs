@@ -144,7 +144,7 @@ namespace KazGraph
         private List<clsOneDriveRootValue> BindGridList(string query)
         {
             #region Code Connections
-            string userid = "550dc14d-db6a-4ca3-bfd4-d47f11fba852";
+            string userid = string.Empty;
             if (Session["Token"] == null)
             {
                 TokenGenerate();
@@ -154,15 +154,20 @@ namespace KazGraph
                 userid = Convert.ToString(Session["ddluserSelected"]);
             }
 
-            List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
-            Task t2 = Task.Run(async () =>
+            if (!string.IsNullOrWhiteSpace(userid))
             {
-                var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
-                te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
-            });
-            t2.Wait();
-            #endregion
-            return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+                List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
+                Task t2 = Task.Run(async () =>
+                {
+                    var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
+                    te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+                });
+                t2.Wait();
+                #endregion
+                return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+            }
+            else
+                return null;
         }
 
         protected void OnRowDataBound(object sender, GridViewRowEventArgs e)
