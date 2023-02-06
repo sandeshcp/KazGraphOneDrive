@@ -1,6 +1,5 @@
 ﻿using Azure;
 using KazGraph.Models;
-using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -97,7 +96,6 @@ namespace KazGraph.DAL
                             new ListItem("From DB", "1"),
                             new ListItem("To DB", "2")
                         };
-
                 return act;
             }
             catch
@@ -157,6 +155,31 @@ namespace KazGraph.DAL
             finally
             {
 
+                con.Close();
+                con.Dispose();
+            }
+        }
+
+        public int SelectItem(string UID) // passing Bussiness object Here 
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("GetOneDriveItems", con)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                cmd.Parameters.AddWithValue("@UID", UID);
+                con.Open();
+                int Result = cmd.ExecuteNonQuery();
+                cmd.Dispose();
+                return Result;
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
                 con.Close();
                 con.Dispose();
             }

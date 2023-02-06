@@ -64,5 +64,18 @@ namespace KazGraph.BAL
             }
         }
 
+        public int SelectItem(string UID)
+        {
+            try
+            {
+                OneDriveDal objTenant = new OneDriveDal();
+                return objTenant.SelectItem(UID);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
     }
 }
