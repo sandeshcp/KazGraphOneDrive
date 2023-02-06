@@ -37,6 +37,8 @@ using Azure.Core;
 using System.Configuration;
 using System.Data.Common;
 using System.Collections;
+using KazGraph.BAL;
+using Microsoft.Graph.ExternalConnectors;
 
 namespace KazGraph
 {
@@ -343,20 +345,12 @@ namespace KazGraph
 
         public void GetTenantList()
         {
-            SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["KazooDB"].ConnectionString);
-            SqlDataAdapter adpt = new SqlDataAdapter();
-            SqlCommand command = new SqlCommand();
-
             try
             {
-                con.Open();
-                string com = "Select * from AzureConnection";
-                adpt = new SqlDataAdapter(com, con);
-                DataTable dt = new DataTable();
-                adpt.Fill(dt);
+                OneDriveBal objt = new OneDriveBal();
                 dllTenent.DataTextField = "AzureConnectionName";
                 dllTenent.DataValueField = "AzureConnectionID";
-                dllTenent.DataSource = dt;
+                dllTenent.DataSource = objt.GetTenantList();
                 dllTenent.DataBind();
 
                 var LICountry = new ListItem("----Select----", "-1");
@@ -368,56 +362,24 @@ namespace KazGraph
                     DDLUserBind();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
-            }
-            finally
-            {
-                adpt.Dispose();
-                command.Dispose();
-                con.Close();
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('" + ex.Message + "')", true);
             }
         }
 
         public async Task<clsTenantList> GetTenantDetails(string id)
         {
-            clsTenantList obj = new clsTenantList();
-
-            SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["KazooDB"].ConnectionString);
-            con.Open();
-            SqlCommand command;
-            SqlDataReader dataReader;
-            String sql, Output = " ";
-            sql = "Select AzureConnectionID, AccountID,AzureConnectionName,Token,ClientID,ClientSecret,Resource,GrantType,TenantID,Scopes from AzureConnection where AzureConnectionID='" + id + "'";
-
-            command = new SqlCommand(sql, con);
-
-            dataReader = await command.ExecuteReaderAsync();
-            while (dataReader.Read())
+            try
             {
-                //var employeeObj = dataReader.MapToObject<clsTenantList>();
-                obj.AzureConnectionID = Guid.Parse(Convert.ToString(dataReader.GetValue(0)));
-                if (!string.IsNullOrWhiteSpace(dataReader["AccountID"] as string))
-                {
-                    obj.AccountID = Guid.Parse(Convert.ToString(dataReader["AccountID"]));
-                }
-                obj.AzureConnectionName = Convert.ToString(dataReader.GetValue(2));
-                obj.Token = Convert.ToString(dataReader.GetValue(3));
-                obj.ClientID = Convert.ToString(dataReader.GetValue(4));
-                obj.ClientSecret = Convert.ToString(dataReader.GetValue(5));
-                obj.Resource = Convert.ToString(dataReader.GetValue(6));
-                obj.GrantType = Convert.ToString(dataReader.GetValue(7));
-                obj.TenantID = Convert.ToString(dataReader.GetValue(8));
-                obj.Scopes = Convert.ToString(dataReader.GetValue(9));
+                OneDriveBal objt = new OneDriveBal();
+                return await objt.GetTenantDetails(id);
             }
-
-            Response.Write(Output);
-            dataReader.Close();
-            command.Dispose();
-            con.Close();
-            return obj;
+            catch (Exception ex)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('" + ex.Message + "')", true);
+            }
+            return null;
         }
 
         protected void dllTenent_SelectedIndexChanged(object sender, EventArgs e)
@@ -540,24 +502,22 @@ namespace KazGraph
 
         public void ddlActionTrigger()
         {
-            ddlAction.DataTextField = "Text";
-            ddlAction.DataValueField = "Value";
-
-            List<ListItem> act = new List<ListItem>
+            try
             {
-                new ListItem("----Select----", "-1"),
-                new ListItem("From DB", "1"),
-                new ListItem("To DB", "2")
-            };
-            //ddlAction.Items.Insert(0, act);
-
-            ddlAction.DataSource = act;
-            ddlAction.DataBind();
-
-            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]))
+                OneDriveBal objt = new OneDriveBal();
+                ddlAction.DataTextField = "Text";
+                ddlAction.DataValueField = "Value";
+                ddlAction.DataSource = objt.GetActionList();
+                ddlAction.DataBind();
+                if (string.IsNullOrWhiteSpace(Request.QueryString["name"]))
+                {
+                    ddlAction.SelectedValue = "-1";
+                    Session["ddlActionSelected"] = ddlAction.SelectedValue;
+                }
+            }
+            catch (Exception ex)
             {
-                ddlAction.SelectedValue = "-1";
-                Session["ddlActionSelected"] = ddlAction.SelectedValue;
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('" + ex.Message + "')", true);
             }
         }
     }
