@@ -64,12 +64,12 @@ namespace KazGraph.BAL
             }
         }
 
-        public int SelectItem(string UID)
+        public async Task<List<clsOneDriveRootValue>> SelectItem(string UID)
         {
             try
             {
                 OneDriveDal objTenant = new OneDriveDal();
-                return objTenant.SelectItem(UID);
+                return await objTenant.SelectItem(UID);
             }
             catch
             {

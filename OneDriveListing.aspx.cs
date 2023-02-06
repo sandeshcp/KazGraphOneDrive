@@ -163,9 +163,10 @@ namespace KazGraph
             {
                 if (actiontrigger != null)
                 {
+                    List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
                     if (actiontrigger == "2") //to db store
                     {
-                        List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
+                        
                         Task t2 = Task.Run(async () =>
                         {
                             var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
@@ -177,7 +178,14 @@ namespace KazGraph
                     }
                     else if (actiontrigger == "1") //Get From db store
                     {
-                        return null;
+                        OneDriveBal obj = new OneDriveBal();
+                        Task t2 = Task.Run(async () =>
+                        {
+                            var sam = JsonConvert.SerializeObject(await obj.SelectItem(userid).ConfigureAwait(false));
+                            te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+                        });
+                        t2.Wait();
+                        return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
                     }
                     else
                     {
