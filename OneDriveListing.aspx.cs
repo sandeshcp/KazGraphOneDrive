@@ -165,8 +165,7 @@ namespace KazGraph
                 {
                     List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
                     if (actiontrigger == "2") //to db store
-                    {
-                        
+                    {                        
                         Task t2 = Task.Run(async () =>
                         {
                             var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
