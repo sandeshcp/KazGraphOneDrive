@@ -179,7 +179,7 @@ namespace KazGraph.DAL
                 await con.OpenAsync();
                 String sql, Output = " ";
                 sql = "SELECT   TesttblID      ,odatatype      ,id      ,name      ,webUrl      ,size      ,parentReferencedriveType      ,parentReferencedriveId      ,parentReferenceid      ,parentReferencepath      " +
-                    ",fileSystemInfocreatedDateTime      ,fileSystemInfolastModifiedDateTime      ,filemimeType      ,filehashesquickXorHash      ,ISNULL(folderchildCount,0) as folderchildCount ,eTag      ,cTag      " +
+                    ",fileSystemInfocreatedDateTime      ,fileSystemInfolastModifiedDateTime      ,filemimeType      ,filehashesquickXorHash      ,ISNULL(folderchildCount,-1) as folderchildCount ,eTag      ,cTag      " +
                     ",createdByuseremail      ,createdByuserid      ,createdByuserdisplayName      ,createdDateTime      ,lastModifiedByuseremail      ,lastModifiedByuserid      ,lastModifiedByuserdisplayName      ,lastModifiedDateTime     " +
                     " ,sharedscope  FROM Testtbl where createdByuserid='" + UID + "' ORDER BY createdDateTime DESC ";
 
@@ -223,10 +223,10 @@ namespace KazGraph.DAL
                                     quickXorHash = item.filehashesquickXorHash,
                                 },
                             },
-                            folder = new Models.Folder
+                            folder = (item.folderchildCount == -1 ? null : new Models.Folder
                             {
                                 childCount = item.folderchildCount,
-                            },
+                            }),
                             eTag = item.eTag,
                             cTag = item.cTag,
                             createdBy = new CreatedBy
@@ -249,12 +249,6 @@ namespace KazGraph.DAL
                             }
                             //sharedscope = item.sharedscope = item.sharedscope
                         });
-
-                        if (item.folderchildCount == 0)
-                        {
-                            objitem.Select(x => x.folder = null);
-                        }
-
                     }
                 }
                 return objitem;
