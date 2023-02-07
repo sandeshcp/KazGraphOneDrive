@@ -244,12 +244,15 @@
                                         </ItemTemplate>
                                     </asp:TemplateField>
 
-                                    <asp:BoundField ItemStyle-Width="200" DataField="eTag" HeaderText="eTag" />
-                                    <asp:BoundField ItemStyle-Width="200" DataField="cTag" HeaderText="cTag" />
-                                    <asp:BoundField ItemStyle-Width="200" DataField="createdDateTime" HeaderText="Created Date" />
-                                    <asp:BoundField ItemStyle-Width="200" DataField="lastModifiedDateTime" HeaderText="Modified Date" />
-                                    <asp:BoundField ItemStyle-Width="200" DataField="parentReference.path" HeaderText="parentReference path" />
-                                    <asp:BoundField ItemStyle-Width="200" DataField="file.mimeType" HeaderText="File Structure" />
+                                    <asp:BoundField ItemStyle-Width="10" DataField="eTag" HeaderText="eTag" />
+                                    <asp:BoundField ItemStyle-Width="10" DataField="cTag" HeaderText="cTag" />
+                                    <asp:BoundField ItemStyle-Width="10" DataField="createdDateTime" HeaderText="Created Date" />
+                                    <asp:BoundField ItemStyle-Width="10" DataField="lastModifiedDateTime" HeaderText="Modified Date" />
+                                    <asp:BoundField ItemStyle-Width="10" DataField="parentReference.path" HeaderText="parentReference path" />
+                                    <asp:BoundField ItemStyle-Width="10" DataField="file.mimeType" HeaderText="File Structure" />
+                                                                     
+                                    <asp:BoundField ItemStyle-Width="10" DataField="fileSystemInfo.createdDateTime" HeaderText="FileCreated Date" />
+                                    <asp:BoundField ItemStyle-Width="10" DataField="fileSystemInfo.lastModifiedDateTime" HeaderText="FielModified Date" />
                                 </Columns>
                             </asp:GridView>
                         </asp:Panel>

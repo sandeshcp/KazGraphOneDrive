@@ -117,5 +117,37 @@ namespace KazGraph.Models
         public string lastModifiedByuserdisplayName { get; set; }
         public DateTime lastModifiedDateTime { get; set; }
         //public string sharedscope { get; set; }
+        public Guid AzureConnectionID { get; set; }
+    }
+
+    public class OneDriveItemDTOstring
+    {
+        public string TesttblID { get; set; }
+        public string odatatype { get; set; }
+        public string id { get; set; }
+        public string name { get; set; }
+        public string webUrl { get; set; }
+        public int size { get; set; }
+        public string parentReferencedriveType { get; set; }
+        public string parentReferencedriveId { get; set; }
+        public string parentReferenceid { get; set; }
+        public string parentReferencepath { get; set; }
+        public string fileSystemInfocreatedDateTime { get; set; }
+        public DateTime fileSystemInfolastModifiedDateTime { get; set; }
+        public string filemimeType { get; set; }
+        public string filehashesquickXorHash { get; set; }
+        public int folderchildCount { get; set; }
+        public string eTag { get; set; }
+        public string cTag { get; set; }
+        public string createdByuseremail { get; set; }
+        public string createdByuserid { get; set; }
+        public string createdByuserdisplayName { get; set; }
+        public DateTime createdDateTime { get; set; }
+        public string lastModifiedByuseremail { get; set; }
+        public string lastModifiedByuserid { get; set; }
+        public string lastModifiedByuserdisplayName { get; set; }
+        public DateTime lastModifiedDateTime { get; set; }
+        //public string sharedscope { get; set; }
+        public Guid AzureConnectionID { get; set; }
     }
 }

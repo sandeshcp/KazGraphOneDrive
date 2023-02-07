@@ -97,7 +97,10 @@ namespace KazGraph
                 t1.Wait();
                 if (objuser != "null")
                 {
-                    List<ListItem> users = new List<ListItem>();
+                    List<ListItem> users = new List<ListItem>
+                    {
+                        new ListItem("All", "0")
+                    };
                     foreach (clsUserDetails su in JsonConvert.DeserializeObject<List<clsUserDetails>>(objuser))
                     {
                         users.Add(new ListItem(su.displayName, su.id));
@@ -147,6 +150,8 @@ namespace KazGraph
             #region Code Connections
             string userid = string.Empty;
             string actiontrigger = string.Empty;
+            string AzureConnectionID = string.Empty;
+
             if (Session["Token"] == null)
             {
                 TokenGenerate();
@@ -159,31 +164,40 @@ namespace KazGraph
             {
                 actiontrigger = Convert.ToString(Session["ddlActionSelected"]);
             }
+
+            if (Convert.ToString(Session["AzureConnectionID"]) != null)
+            {
+                AzureConnectionID = Convert.ToString(Session["AzureConnectionID"]);
+            }
             if (!string.IsNullOrWhiteSpace(userid))
             {
                 if (actiontrigger != null)
                 {
                     List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
                     if (actiontrigger == "2") //to db store
-                    {                        
-                        Task t2 = Task.Run(async () =>
+                    {
+                        OneDriveBal obj = new OneDriveBal();
+                        Task t11 = Task.Run(async () =>
                         {
                             var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
                             te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+
+                            var sam2 = JsonConvert.SerializeObject(await obj.InsertItem(te, AzureConnectionID).ConfigureAwait(false));
+                            //te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam2);
                         });
-                        t2.Wait();
+                        t11.Wait();
                         #endregion
                         return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
                     }
                     else if (actiontrigger == "1") //Get From db store
                     {
                         OneDriveBal obj = new OneDriveBal();
-                        Task t2 = Task.Run(async () =>
+                        Task t22 = Task.Run(async () =>
                         {
-                            var sam = JsonConvert.SerializeObject(await obj.SelectItem(userid).ConfigureAwait(false));
+                            var sam = JsonConvert.SerializeObject(await obj.SelectItem(userid, AzureConnectionID).ConfigureAwait(false));
                             te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
                         });
-                        t2.Wait();
+                        t22.Wait();
                         return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
                     }
                     else
@@ -379,8 +393,11 @@ namespace KazGraph
         {
             try
             {
+
                 OneDriveBal objt = new OneDriveBal();
-                return await objt.GetTenantDetails(id);
+                var azuretenantdetails = await objt.GetTenantDetails(id);
+                Session["AzureConnectionID"] = azuretenantdetails.AzureConnectionID;
+                return azuretenantdetails;
             }
             catch (Exception ex)
             {
