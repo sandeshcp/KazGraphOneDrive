@@ -105,6 +105,8 @@ namespace KazGraph
                     {
                         users.Add(new ListItem(su.displayName, su.id));
                     }
+                    Session["AllUserID"] = JsonConvert.DeserializeObject<List<clsUserDetails>>(objuser).ToList().Select(x => x.id).ToList();
+
                     ddlUser.DataTextField = "Text";
                     ddlUser.DataValueField = "Value";
                     ddlUser.DataSource = users;
@@ -146,8 +148,7 @@ namespace KazGraph
             }
         }
         private List<clsOneDriveRootValue> BindGridList(string query)
-        {
-            #region Code Connections
+        {            
             string userid = string.Empty;
             string actiontrigger = string.Empty;
             string AzureConnectionID = string.Empty;
@@ -174,40 +175,52 @@ namespace KazGraph
                 if (actiontrigger != null)
                 {
                     List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
-                    if (actiontrigger == "2") //to db store
-                    {
-                        Task t11 = Task.Run(async () =>
-                        {
-                            var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
-                            te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
 
-                            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && query == "/drive/root:" && te.ToList().Count > 0)//DRY
-                            {
-                                var sam2 = JsonConvert.SerializeObject(await new OneDriveBal().InsertItem(te, AzureConnectionID).ConfigureAwait(false));
-                                
-                            }
-                            //te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam2);
-                        });
-                        t11.Wait();
-                        
-                        #endregion
-                        return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
-                        //ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Done')", true);
-                    }
-                    else if (actiontrigger == "1") //Get From db store
+                    #region OldCode
+                    //if (actiontrigger == "2") //to db store
+                    //{
+                    //    Task t11 = Task.Run(async () =>
+                    //    {
+                    //        var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
+                    //        te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+
+                    //        if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && query == "/drive/root:" && te.ToList().Count > 0)//DRY
+                    //        {
+                    //            var sam2 = JsonConvert.SerializeObject(await new OneDriveBal().InsertItem(userid, te, AzureConnectionID).ConfigureAwait(false));
+
+                    //        }
+                    //        //te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam2);
+                    //    });
+                    //    t11.Wait();
+
+                    //    
+                    //    return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+                    //    //ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Done')", true);
+                    //}
+                    //else if (actiontrigger == "1") //Get From db store
+                    //{
+                    //    Task t22 = Task.Run(async () =>
+                    //    {
+                    //        var sam = JsonConvert.SerializeObject(await new OneDriveBal().SelectItem(userid, AzureConnectionID).ConfigureAwait(false));
+                    //        te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+                    //    });
+                    //    t22.Wait();
+                    //    return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+                    //}
+                    //else
+                    //{
+                    //    return null;
+                    //}
+                    #endregion
+
+                    Task t22 = Task.Run(async () =>
                     {
-                        Task t22 = Task.Run(async () =>
-                        {
-                            var sam = JsonConvert.SerializeObject(await new OneDriveBal().SelectItem(userid, AzureConnectionID).ConfigureAwait(false));
-                            te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
-                        });
-                        t22.Wait();
-                        return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                        var sam = JsonConvert.SerializeObject(await new OneDriveBal().SelectItem(userid, AzureConnectionID).ConfigureAwait(false));
+                        te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+                    });
+                    t22.Wait();
+                    return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+
                 }
                 return null;
             }
@@ -288,11 +301,8 @@ namespace KazGraph
             }
         }
 
-        private static async Task<List<clsOneDriveRootValue>> GetGraphAccessOneDrive(string AccessToken, string UserID)
+        private async Task<List<clsOneDriveRootValue>> GetGraphAccessOneDrive(string AccessToken, string UserID)
         {
-            #region MyRegion
-
-            #endregion
             string res = string.Empty;
             List<clsOneDriveRootValue> myDeserializedClass = null;
             try
@@ -365,9 +375,6 @@ namespace KazGraph
                 return null;
             }
         }
-
-
-
         public void GetTenantList()
         {
             try
@@ -505,11 +512,11 @@ namespace KazGraph
                 var selectName = ddlAction.SelectedValue;
                 Session["ddlActionSelected"] = ddlAction.SelectedValue;
 
-                //if (ddlAction.SelectedValue == "2") //store to DB level then dont connect to GridBind
-                //{
-
-                //}
-                //else
+                if (ddlAction.SelectedValue == "2") //store to DB level then dont connect to GridBind
+                {
+                    GetOneDriveForALL();
+                }
+                else
                 if (!string.IsNullOrWhiteSpace(Request.QueryString["name"]))
                 {
                     obj = BindGridList(Request.QueryString["name"]);
@@ -552,6 +559,67 @@ namespace KazGraph
             {
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('" + ex.Message + "')", true);
             }
+        }
+
+        private List<clsOneDriveRootValue> GetOneDriveForALL()
+        {
+            string userid = string.Empty;
+            string actiontrigger = string.Empty;
+            string AzureConnectionID = string.Empty;
+
+            if (Session["Token"] == null)
+            {
+                TokenGenerate();
+            }
+            if (Session["ddluserSelected"] != null)
+            {
+                userid = Convert.ToString(Session["ddluserSelected"]);
+            }
+            if (Session["ddlActionSelected"] != null)
+            {
+                actiontrigger = Convert.ToString(Session["ddlActionSelected"]);
+            }
+
+            if (Convert.ToString(Session["AzureConnectionID"]) != null)
+            {
+                AzureConnectionID = Convert.ToString(Session["AzureConnectionID"]);
+            }
+            if (!string.IsNullOrWhiteSpace(userid))
+            {
+                if (actiontrigger != null)
+                {
+
+                    if (actiontrigger == "2") //to db store
+                    {
+                        // List<string> lst = new List<string>();
+                        List<string> lst = Session["AllUserID"] as List<string>;
+
+                        foreach (var item in lst)
+                        {
+                            List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
+                            Task continuation = Task.Run(async () =>
+                            {
+                                var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), item).ConfigureAwait(false));
+                                te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+                            });
+                            continuation.Wait();
+                            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && te?.ToList().Count > 0)//DRY
+                            {
+                                var sam2 = JsonConvert.SerializeObject(new OneDriveBal().InsertItem(item, te, AzureConnectionID).ConfigureAwait(false));
+                            }
+                        }
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Success! Action To DB')", true);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                return null;
+            }
+            else
+                return null;
         }
     }
 }

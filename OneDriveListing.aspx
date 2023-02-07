@@ -169,15 +169,16 @@
         <div>
             <br />
             <br />
-            Tenant ; 
+             Tenant :&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
             <asp:DropDownList ID="dllTenent" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id" OnSelectedIndexChanged="dllTenent_SelectedIndexChanged">
             </asp:DropDownList>
             <br />
             <br />
-            Tenant User ; 
+            Tenant User :
             <asp:DropDownList ID="ddlUser" runat="server" AutoPostBack="True" OnSelectedIndexChanged="ddlUser_SelectedIndexChanged" DataTextField="displayName" DataValueField="id"></asp:DropDownList>
             <br />
             <br />
+            Action :&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
             <asp:DropDownList ID="ddlAction" runat="server" AutoPostBack="True" DataTextField="displayName" DataValueField="id" OnSelectedIndexChanged="ddlAction_SelectedIndexChanged">
                 <%--<asp:ListItem Value="-1">Please Select</asp:ListItem>
                 <asp:ListItem Value="1">From DB </asp:ListItem>

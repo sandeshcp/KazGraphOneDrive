@@ -139,7 +139,7 @@ namespace KazGraph.DAL
             }
         }
 
-        public async Task<int> InsertItem(List<clsOneDriveRootValue> ObjBO, string AzureConnectionID) // passing Bussiness object Here 
+        public async Task<int> InsertItem(string UID,List<clsOneDriveRootValue> ObjBO, string AzureConnectionID) // passing Bussiness object Here 
         {
             try
             {
@@ -276,6 +276,8 @@ namespace KazGraph.DAL
                         cmd.CommandType = CommandType.StoredProcedure;
                         //Add the input parameter required by the stored procedure
                         cmd.Parameters.AddWithValue("@OneDriveItem", dt);
+                        cmd.Parameters.AddWithValue("@UID", UID);
+                        cmd.Parameters.AddWithValue("@AzureConnectionID", AzureConnectionID);
                         //Execute the command
                         int sa = cmd.ExecuteNonQuery();
                     }
