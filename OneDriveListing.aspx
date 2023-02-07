@@ -224,7 +224,7 @@
             <Columns>
                 <asp:TemplateField>
                     <ItemTemplate>
-                        <img src='<%# Convert.ToString(Eval("folder")) == "KazGraph.Models.Folder" ? "img/plus.png" : "" %>' style="cursor: pointer;">
+                        <img src='<%# Convert.ToString(Eval("file")) == "" ? "img/plus.png" : "" %>' style="cursor: pointer;">
 
                         <%--<img alt="" style="cursor: pointer" src="img/plus.png" />--%>
                         <asp:Panel ID="pnlOneDrive" runat="server" Style="display: none">
@@ -239,7 +239,7 @@
                                     <asp:BoundField ItemStyle-Width="200" DataField="id" HeaderText="ID" />
                                     <asp:TemplateField HeaderText="Web Url To Access">
                                         <ItemTemplate>
-                                            <img src='<%# Convert.ToString(Eval("folder")) == "KazGraph.Models.Folder" ? "img/folder.svg" : "" %>' style="width: 20px;">
+                                            <img src='<%# Convert.ToString(Eval("file")) == "" ? "img/folder.svg" : "" %>' style="width: 20px;">
                                             <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl='<%# Eval("webUrl") %>' Target="_blank"><%# Eval("name") %>(<%# Eval("size") %>)</asp:HyperLink>
                                         </ItemTemplate>
                                     </asp:TemplateField>
@@ -268,10 +268,10 @@
 
                 <asp:TemplateField HeaderText="One Drive URL/Download">
                     <ItemTemplate>
-                        <img src='<%# Convert.ToString(Eval("folder")) == "KazGraph.Models.Folder" ? "img/folder.svg" : "" %>' style="width: 20px;">
+                        <img src='<%# Convert.ToString(Eval("file")) == "" ? "img/folder.svg" : "" %>' style="width: 20px;">
                         <%--(<%# Eval("size") %>)--%>
                         <%--<asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl='<%# Eval("webUrl") %>' Text='<%# Eval("name") %>' Target="_blank"></asp:HyperLink>--%>
-                        <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl='<%# Convert.ToString(Eval("folder")) == "KazGraph.Models.Folder" ? "OneDriveListing.aspx?name="+Eval("ChildNode") : Eval("webUrl") %>' Text='<%# Eval("Name") %>' Target="_self"></asp:HyperLink>
+                        <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl='<%# Convert.ToString(Eval("folder")) == "" ? "OneDriveListing.aspx?name="+Eval("ChildNode") : Eval("webUrl") %>' Text='<%# Eval("Name") %>' Target="_self"></asp:HyperLink>
                     </ItemTemplate>
                 </asp:TemplateField>
                 <asp:BoundField ItemStyle-Width="200" DataField="eTag" HeaderText="eTag" />

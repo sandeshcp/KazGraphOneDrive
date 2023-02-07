@@ -354,14 +354,14 @@ namespace KazGraph.DAL
                                 createdDateTime = item.fileSystemInfocreatedDateTime,
                                 lastModifiedDateTime = item.fileSystemInfolastModifiedDateTime
                             },
-                            file = new File
+                            file = (item.filemimeType == "" && item.filehashesquickXorHash == "" ? null : new File
                             {
                                 mimeType = item.filemimeType,
                                 hashes = new Hashes
                                 {
                                     quickXorHash = item.filehashesquickXorHash,
                                 },
-                            },
+                            }),
                             folder = (item.folderchildCount == -1 ? null : new Models.Folder
                             {
                                 childCount = item.folderchildCount,
@@ -391,6 +391,8 @@ namespace KazGraph.DAL
 
                             //sharedscope = item.sharedscope = item.sharedscope
                         });
+
+
                     }
                 }
                 return objitem;

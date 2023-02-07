@@ -181,18 +181,21 @@ namespace KazGraph
                             var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
                             te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
 
-                            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && query == "/drive/root:")//DRY
+                            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && query == "/drive/root:" && te.ToList().Count > 0)//DRY
                             {
                                 var sam2 = JsonConvert.SerializeObject(await new OneDriveBal().InsertItem(te, AzureConnectionID).ConfigureAwait(false));
+                                
                             }
                             //te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam2);
                         });
                         t11.Wait();
+                        
                         #endregion
                         return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
+                        //ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Done')", true);
                     }
                     else if (actiontrigger == "1") //Get From db store
-                    {                        
+                    {
                         Task t22 = Task.Run(async () =>
                         {
                             var sam = JsonConvert.SerializeObject(await new OneDriveBal().SelectItem(userid, AzureConnectionID).ConfigureAwait(false));
