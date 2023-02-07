@@ -259,12 +259,12 @@ namespace KazGraph.DAL
                     //dt.Columns.Remove("createdByuserid");
                     //dt.Columns.Remove("createdByuserdisplayName");
                     //dt.Columns.Remove("createdDateTime");
-                    dt.Columns.Remove("lastModifiedByuseremail");
-                    dt.Columns.Remove("lastModifiedByuserid");
-                    dt.Columns.Remove("lastModifiedByuserdisplayName");
-                    dt.Columns.Remove("lastModifiedDateTime");
-                    //dt.Columns.Remove("sharedscope");
-                    dt.Columns.Remove("AzureConnectionID");
+                    //dt.Columns.Remove("lastModifiedByuseremail");
+                    //dt.Columns.Remove("lastModifiedByuserid");
+                    //dt.Columns.Remove("lastModifiedByuserdisplayName");
+                    //dt.Columns.Remove("lastModifiedDateTime");
+                    ////dt.Columns.Remove("sharedscope");
+                    //dt.Columns.Remove("AzureConnectionID");
 
                     //Creating the connection object
                     await con.OpenAsync();
