@@ -176,13 +176,15 @@ namespace KazGraph
                     List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
                     if (actiontrigger == "2") //to db store
                     {
-                        OneDriveBal obj = new OneDriveBal();
                         Task t11 = Task.Run(async () =>
                         {
                             var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), userid).ConfigureAwait(false));
                             te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
 
-                            var sam2 = JsonConvert.SerializeObject(await obj.InsertItem(te, AzureConnectionID).ConfigureAwait(false));
+                            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && query == "/drive/root:")//DRY
+                            {
+                                var sam2 = JsonConvert.SerializeObject(await new OneDriveBal().InsertItem(te, AzureConnectionID).ConfigureAwait(false));
+                            }
                             //te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam2);
                         });
                         t11.Wait();
@@ -190,11 +192,10 @@ namespace KazGraph
                         return te?.Where(x => x.parentReference.path == query).OrderByDescending(x => x.createdDateTime).ToList();
                     }
                     else if (actiontrigger == "1") //Get From db store
-                    {
-                        OneDriveBal obj = new OneDriveBal();
+                    {                        
                         Task t22 = Task.Run(async () =>
                         {
-                            var sam = JsonConvert.SerializeObject(await obj.SelectItem(userid, AzureConnectionID).ConfigureAwait(false));
+                            var sam = JsonConvert.SerializeObject(await new OneDriveBal().SelectItem(userid, AzureConnectionID).ConfigureAwait(false));
                             te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
                         });
                         t22.Wait();
@@ -501,6 +502,11 @@ namespace KazGraph
                 var selectName = ddlAction.SelectedValue;
                 Session["ddlActionSelected"] = ddlAction.SelectedValue;
 
+                //if (ddlAction.SelectedValue == "2") //store to DB level then dont connect to GridBind
+                //{
+
+                //}
+                //else
                 if (!string.IsNullOrWhiteSpace(Request.QueryString["name"]))
                 {
                     obj = BindGridList(Request.QueryString["name"]);

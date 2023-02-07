@@ -181,8 +181,7 @@ namespace KazGraph.DAL
                         parentReferenceid = item.parentReference.id,
                         parentReferencepath = item.parentReference.path,
                         fileSystemInfocreatedDateTime = item.fileSystemInfo.createdDateTime.ToString("G", new CultureInfo("en-US")),
-
-                        fileSystemInfolastModifiedDateTime = item.fileSystemInfo.lastModifiedDateTime,
+                        fileSystemInfolastModifiedDateTime = item.fileSystemInfo.lastModifiedDateTime.ToString("G", new CultureInfo("en-US")),
 
                         filemimeType = (filetype == true ? string.Empty : item.file.mimeType),
                         filehashesquickXorHash = (filetype == true ? string.Empty : item.file.hashes.quickXorHash),
@@ -197,8 +196,8 @@ namespace KazGraph.DAL
                         lastModifiedByuseremail = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.email),
                         lastModifiedByuserid = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.id),
                         lastModifiedByuserdisplayName = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.displayName),
-                        lastModifiedDateTime = item.lastModifiedDateTime,
-                        createdDateTime = item.createdDateTime,
+                        lastModifiedDateTime = item.lastModifiedDateTime.ToString("G", new CultureInfo("en-US")),
+                        createdDateTime = item.createdDateTime.ToString("G", new CultureInfo("en-US")),
                         AzureConnectionID = Guid.Parse(AzureConnectionID)
                     }
                     );
@@ -250,16 +249,16 @@ namespace KazGraph.DAL
                     //dt.Columns.Remove("parentReferenceid");
                     //dt.Columns.Remove("parentReferencepath");
                     //dt.Columns.Remove("fileSystemInfocreatedDateTime");
-                    dt.Columns.Remove("fileSystemInfolastModifiedDateTime");
-                    dt.Columns.Remove("filemimeType");
-                    dt.Columns.Remove("filehashesquickXorHash");
-                    dt.Columns.Remove("folderchildCount");
-                    dt.Columns.Remove("eTag");
-                    dt.Columns.Remove("cTag");
-                    dt.Columns.Remove("createdByuseremail");
-                    dt.Columns.Remove("createdByuserid");
-                    dt.Columns.Remove("createdByuserdisplayName");
-                    dt.Columns.Remove("createdDateTime");
+                    //dt.Columns.Remove("fileSystemInfolastModifiedDateTime");
+                    //dt.Columns.Remove("filemimeType");
+                    //dt.Columns.Remove("filehashesquickXorHash");
+                    //dt.Columns.Remove("folderchildCount");
+                    //dt.Columns.Remove("eTag");
+                    //dt.Columns.Remove("cTag");
+                    //dt.Columns.Remove("createdByuseremail");
+                    //dt.Columns.Remove("createdByuserid");
+                    //dt.Columns.Remove("createdByuserdisplayName");
+                    //dt.Columns.Remove("createdDateTime");
                     dt.Columns.Remove("lastModifiedByuseremail");
                     dt.Columns.Remove("lastModifiedByuserid");
                     dt.Columns.Remove("lastModifiedByuserdisplayName");
@@ -278,7 +277,7 @@ namespace KazGraph.DAL
                         //Add the input parameter required by the stored procedure
                         cmd.Parameters.AddWithValue("@OneDriveItem", dt);
                         //Execute the command
-                      int sa=  cmd.ExecuteNonQuery();
+                        int sa = cmd.ExecuteNonQuery();
                     }
                     return 1;
                 }

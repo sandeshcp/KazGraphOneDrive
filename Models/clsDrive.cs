@@ -133,7 +133,7 @@ namespace KazGraph.Models
         public string parentReferenceid { get; set; }
         public string parentReferencepath { get; set; }
         public string fileSystemInfocreatedDateTime { get; set; }
-        public DateTime fileSystemInfolastModifiedDateTime { get; set; }
+        public string fileSystemInfolastModifiedDateTime { get; set; }
         public string filemimeType { get; set; }
         public string filehashesquickXorHash { get; set; }
         public int folderchildCount { get; set; }
@@ -142,11 +142,11 @@ namespace KazGraph.Models
         public string createdByuseremail { get; set; }
         public string createdByuserid { get; set; }
         public string createdByuserdisplayName { get; set; }
-        public DateTime createdDateTime { get; set; }
+        public string createdDateTime { get; set; }
         public string lastModifiedByuseremail { get; set; }
         public string lastModifiedByuserid { get; set; }
         public string lastModifiedByuserdisplayName { get; set; }
-        public DateTime lastModifiedDateTime { get; set; }
+        public string lastModifiedDateTime { get; set; }
         //public string sharedscope { get; set; }
         public Guid AzureConnectionID { get; set; }
     }
