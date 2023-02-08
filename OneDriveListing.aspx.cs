@@ -148,7 +148,7 @@ namespace KazGraph
             }
         }
         private List<clsOneDriveRootValue> BindGridList(string query)
-        {            
+        {
             string userid = string.Empty;
             string actiontrigger = string.Empty;
             string AzureConnectionID = string.Empty;
@@ -588,12 +588,11 @@ namespace KazGraph
             {
                 if (actiontrigger != null)
                 {
-
                     if (actiontrigger == "2") //to db store
                     {
                         // List<string> lst = new List<string>();
                         List<string> lst = Session["AllUserID"] as List<string>;
-
+                        int countcurrentsession = 0;
                         foreach (var item in lst)
                         {
                             List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
@@ -606,9 +605,9 @@ namespace KazGraph
                             if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && te?.ToList().Count > 0)//DRY
                             {
                                 var sam2 = JsonConvert.SerializeObject(new OneDriveBal().InsertItem(item, te, AzureConnectionID).ConfigureAwait(false));
+                                countcurrentsession += te.Count;
                             }
                         }
-
                         ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Success! Action To DB')", true);
                     }
                     else
