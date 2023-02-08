@@ -139,70 +139,10 @@ namespace KazGraph.DAL
             }
         }
 
-        public async Task<int> InsertItem(string UID,List<clsOneDriveRootValue> ObjBO, string AzureConnectionID) // passing Bussiness object Here 
+        public async Task<int> InsertItem(List<OneDriveItemDTOstring> objlist, string AzureConnectionID) // passing Bussiness object Here 
         {
             try
             {
-                List<OneDriveItemDTOstring> objlist = new List<OneDriveItemDTOstring>();
-
-                foreach (var item in ObjBO?.ToList())
-                {
-                    bool filetype = false;
-                    bool CreatedBytype = false;
-                    bool lastModifiedBytype = false;
-                    bool folderchildCounttype = false;
-                    if (string.IsNullOrWhiteSpace(Convert.ToString(item.file)))
-                    {
-                        filetype = true;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(Convert.ToString(item.createdBy)))
-                    {
-                        CreatedBytype = true;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(Convert.ToString(item.lastModifiedBy)))
-                    {
-                        lastModifiedBytype = true;
-                    }
-                    if (string.IsNullOrWhiteSpace(Convert.ToString(item.folder)))
-                    {
-                        folderchildCounttype = true;
-                    }
-
-                    objlist.Add(new OneDriveItemDTOstring()
-                    {
-                        id = Convert.ToString(item.id),
-                        name = Convert.ToString(item.name),
-                        webUrl = Convert.ToString(item.webUrl),
-                        size = (item.size as int?) ?? 0,
-                        parentReferencedriveType = (string)(item.parentReference.driveType ?? (object)DBNull.Value),
-                        parentReferencedriveId = item.parentReference.driveId,
-                        parentReferenceid = item.parentReference.id,
-                        parentReferencepath = item.parentReference.path,
-                        fileSystemInfocreatedDateTime = item.fileSystemInfo.createdDateTime.ToString("G", new CultureInfo("en-US")),
-                        fileSystemInfolastModifiedDateTime = item.fileSystemInfo.lastModifiedDateTime.ToString("G", new CultureInfo("en-US")),
-
-                        filemimeType = (filetype == true ? string.Empty : item.file.mimeType),
-                        filehashesquickXorHash = (filetype == true ? string.Empty : item.file.hashes.quickXorHash),
-
-                        folderchildCount = folderchildCounttype == true ? 0 : item.folder.childCount,
-                        eTag = Convert.ToString(item.eTag),
-                        cTag = Convert.ToString(item.cTag),
-                        createdByuseremail = CreatedBytype == true ? string.Empty : Convert.ToString(item.createdBy.user.email),
-                        createdByuserid = CreatedBytype == true ? string.Empty : Convert.ToString(item.createdBy.user.id),
-                        createdByuserdisplayName = CreatedBytype == true ? string.Empty : Convert.ToString(item.createdBy.user.displayName),
-
-                        lastModifiedByuseremail = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.email),
-                        lastModifiedByuserid = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.id),
-                        lastModifiedByuserdisplayName = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.displayName),
-                        lastModifiedDateTime = item.lastModifiedDateTime.ToString("G", new CultureInfo("en-US")),
-                        createdDateTime = item.createdDateTime.ToString("G", new CultureInfo("en-US")),
-                        AzureConnectionID = Guid.Parse(AzureConnectionID)
-                    }
-                    );
-                }
-
                 if (objlist.Count > 0)
                 {
                     #region old style
@@ -240,6 +180,7 @@ namespace KazGraph.DAL
 
                     DataTable dt = ToDataTable(objlist);
                     dt.Columns.Remove("TesttblID");
+                    #region ReuseCodefortesting
                     //dt.Columns.Remove("id");
                     //dt.Columns.Remove("name");
                     //dt.Columns.Remove("webUrl");
@@ -265,7 +206,7 @@ namespace KazGraph.DAL
                     //dt.Columns.Remove("lastModifiedDateTime");
                     ////dt.Columns.Remove("sharedscope");
                     //dt.Columns.Remove("AzureConnectionID");
-
+                    #endregion
                     //Creating the connection object
                     await con.OpenAsync();
                     //You can pass any stored procedure
@@ -276,7 +217,7 @@ namespace KazGraph.DAL
                         cmd.CommandType = CommandType.StoredProcedure;
                         //Add the input parameter required by the stored procedure
                         cmd.Parameters.AddWithValue("@OneDriveItem", dt);
-                        cmd.Parameters.AddWithValue("@UID", UID);
+                        //cmd.Parameters.AddWithValue("@UID", UID);
                         cmd.Parameters.AddWithValue("@AzureConnectionID", AzureConnectionID);
                         //Execute the command
                         int sa = cmd.ExecuteNonQuery();

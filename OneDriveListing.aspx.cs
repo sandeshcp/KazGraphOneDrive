@@ -39,6 +39,7 @@ using System.Data.Common;
 using System.Collections;
 using KazGraph.BAL;
 using Microsoft.Graph.ExternalConnectors;
+using System.Globalization;
 
 namespace KazGraph
 {
@@ -593,20 +594,86 @@ namespace KazGraph
                         // List<string> lst = new List<string>();
                         List<string> lst = Session["AllUserID"] as List<string>;
                         int countcurrentsession = 0;
-                        foreach (var item in lst)
+                        List<OneDriveItemDTOstring> objlist = new List<OneDriveItemDTOstring>();
+                        foreach (var mainitem in lst)
                         {
                             List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
                             Task continuation = Task.Run(async () =>
                             {
-                                var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), item).ConfigureAwait(false));
+                                var sam = JsonConvert.SerializeObject(await GetGraphAccessOneDrive(Convert.ToString(Session["Token"]), mainitem).ConfigureAwait(false));
                                 te = JsonConvert.DeserializeObject<List<clsOneDriveRootValue>>(sam);
+
+                                if (te != null)
+                                {
+                                    #region MyRegion
+                                    List<clsOneDriveRootValue> list = te?.ToList();
+                                    for (int i = 0; i < list.Count; i++)
+                                    {
+                                        clsOneDriveRootValue item = list[i];
+                                        bool filetype = false;
+                                        bool CreatedBytype = false;
+                                        bool lastModifiedBytype = false;
+                                        bool folderchildCounttype = false;
+                                        if (string.IsNullOrWhiteSpace(Convert.ToString(item.file)))
+                                        {
+                                            filetype = true;
+                                        }
+
+                                        if (string.IsNullOrWhiteSpace(Convert.ToString(item.createdBy)))
+                                        {
+                                            CreatedBytype = true;
+                                        }
+
+                                        if (string.IsNullOrWhiteSpace(Convert.ToString(item.lastModifiedBy)))
+                                        {
+                                            lastModifiedBytype = true;
+                                        }
+                                        if (string.IsNullOrWhiteSpace(Convert.ToString(item.folder)))
+                                        {
+                                            folderchildCounttype = true;
+                                        }
+
+                                        objlist.Add(new OneDriveItemDTOstring()
+                                        {
+                                            id = Convert.ToString(item.id),
+                                            name = Convert.ToString(item.name),
+                                            webUrl = Convert.ToString(item.webUrl),
+                                            size = (item.size as int?) ?? 0,
+                                            parentReferencedriveType = (string)(item.parentReference.driveType ?? (object)DBNull.Value),
+                                            parentReferencedriveId = item.parentReference.driveId,
+                                            parentReferenceid = item.parentReference.id,
+                                            parentReferencepath = item.parentReference.path,
+                                            fileSystemInfocreatedDateTime = item.fileSystemInfo.createdDateTime.ToString("G", new CultureInfo("en-US")),
+                                            fileSystemInfolastModifiedDateTime = item.fileSystemInfo.lastModifiedDateTime.ToString("G", new CultureInfo("en-US")),
+
+                                            filemimeType = (filetype == true ? string.Empty : item.file.mimeType),
+                                            filehashesquickXorHash = (filetype == true ? string.Empty : item.file.hashes.quickXorHash),
+
+                                            folderchildCount = folderchildCounttype == true ? 0 : item.folder.childCount,
+                                            eTag = Convert.ToString(item.eTag),
+                                            cTag = Convert.ToString(item.cTag),
+                                            createdByuseremail = CreatedBytype == true ? string.Empty : Convert.ToString(item.createdBy.user.email),
+                                            createdByuserid = CreatedBytype == true ? string.Empty : Convert.ToString(item.createdBy.user.id),
+                                            createdByuserdisplayName = CreatedBytype == true ? string.Empty : Convert.ToString(item.createdBy.user.displayName),
+
+                                            lastModifiedByuseremail = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.email),
+                                            lastModifiedByuserid = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.id),
+                                            lastModifiedByuserdisplayName = lastModifiedBytype == true ? string.Empty : Convert.ToString(item.lastModifiedBy.user.displayName),
+                                            lastModifiedDateTime = item.lastModifiedDateTime.ToString("G", new CultureInfo("en-US")),
+                                            createdDateTime = item.createdDateTime.ToString("G", new CultureInfo("en-US")),
+                                            AzureConnectionID = Guid.Parse(AzureConnectionID)
+                                        }
+                                        );
+                                    }
+                                    #endregion
+                                }
                             });
-                            continuation.Wait();
-                            if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && te?.ToList().Count > 0)//DRY
-                            {
-                                var sam2 = JsonConvert.SerializeObject(new OneDriveBal().InsertItem(item, te, AzureConnectionID).ConfigureAwait(false));
-                                countcurrentsession += te.Count;
-                            }
+                            continuation.Wait();                            
+                        }
+                        if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && objlist?.ToList().Count > 0)//DRY
+                        {
+                            var sam2 = JsonConvert.SerializeObject(new OneDriveBal().InsertItem(objlist, AzureConnectionID).ConfigureAwait(false));
+                            countcurrentsession += objlist.Count;
                         }
                         ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Success! Action To DB')", true);
                     }
