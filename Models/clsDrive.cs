@@ -150,4 +150,14 @@ namespace KazGraph.Models
         //public string sharedscope { get; set; }
         public Guid AzureConnectionID { get; set; }
     }
+
+    public class OneDriveItemFileImport
+    {
+        public Guid FileImportID { get; set; }
+        public int TotalRows { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
+        //public string sharedscope { get; set; }
+        public string AzureConnectionID { get; set; }
+    }
 }

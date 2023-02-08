@@ -51,12 +51,12 @@ namespace KazGraph.BAL
             }
         }
 
-        public async Task<int> InsertItem(List<OneDriveItemDTOstring> ObjBO, string AzureConnectionID)
+        public async Task<int> InsertItem(List<OneDriveItemDTOstring> ObjBO, string AzureConnectionID, OneDriveItemFileImport FileImportID)
         {
             try
             {
                 OneDriveDal objTenant = new OneDriveDal(); // Creating object of Dataccess
-                return await objTenant.InsertItem(ObjBO, AzureConnectionID); // calling Method of DataAccess 
+                return await objTenant.InsertItem(ObjBO, AzureConnectionID, FileImportID); // calling Method of DataAccess 
             }
             catch
             {

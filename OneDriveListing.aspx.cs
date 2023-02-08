@@ -595,6 +595,12 @@ namespace KazGraph
                         List<string> lst = Session["AllUserID"] as List<string>;
                         int countcurrentsession = 0;
                         List<OneDriveItemDTOstring> objlist = new List<OneDriveItemDTOstring>();
+                        OneDriveItemFileImport objFileImport = new OneDriveItemFileImport
+                        {
+                            FileImportID = Guid.NewGuid(),
+                            StartTime = DateTime.Now.ToString("G", new CultureInfo("en-US")),
+                            AzureConnectionID = AzureConnectionID
+                        };
                         foreach (var mainitem in lst)
                         {
                             List<clsOneDriveRootValue> te = new List<clsOneDriveRootValue>();
@@ -668,13 +674,14 @@ namespace KazGraph
                                     #endregion
                                 }
                             });
-                            continuation.Wait();                            
+                            continuation.Wait();
                         }
                         if (string.IsNullOrWhiteSpace(Request.QueryString["name"]) && objlist?.ToList().Count > 0)//DRY
                         {
-                            var sam2 = JsonConvert.SerializeObject(new OneDriveBal().InsertItem(objlist, AzureConnectionID).ConfigureAwait(false));
-                            countcurrentsession += objlist.Count;
+                            objFileImport.TotalRows = countcurrentsession + objlist.Count;
+                            var sam2 = JsonConvert.SerializeObject(new OneDriveBal().InsertItem(objlist, AzureConnectionID, objFileImport).ConfigureAwait(false));
                             ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Success! Action To DB.')", true);
+                            objFileImport.EndTime = DateTime.Now.ToString("G", new CultureInfo("en-US"));
                         }
                         else
                         {
