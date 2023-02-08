@@ -674,8 +674,12 @@ namespace KazGraph
                         {
                             var sam2 = JsonConvert.SerializeObject(new OneDriveBal().InsertItem(objlist, AzureConnectionID).ConfigureAwait(false));
                             countcurrentsession += objlist.Count;
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Success! Action To DB.')", true);
                         }
-                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Success! Action To DB')", true);
+                        else
+                        {
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Info! Please reload your page.')", true);
+                        }
                     }
                     else
                     {
